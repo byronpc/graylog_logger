@@ -1,0 +1,13 @@
+[{kernel,
+  [
+    {logger, [
+      {handler, default, undefined},
+      {handler, graylog, graylog_logger, #{
+        host => "localhost",
+        port => 12201,
+        compression => disabled
+      }}
+    ]},
+    {logger_level, warning}
+  ]}
+].
