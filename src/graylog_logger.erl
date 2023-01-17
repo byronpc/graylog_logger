@@ -19,7 +19,7 @@
     code_change/3
 ]).
 
-log(LogEvent, Config) ->
+log(LogEvent, _Config) ->
     gen_event:notify(?MODULE, LogEvent).
 
 init() ->
@@ -29,7 +29,7 @@ init() ->
 
 init(_) ->
     Env = application:get_env(kernel, logger, []),
-    {handler, _, _, #{host := Host, port := Port} = Config} = lists:keyfind(graylog_logger, 3, Env),
+    {handler, _, _, #{host := Host} = Config} = lists:keyfind(graylog_logger, 3, Env),
     {ok, Socket} = gen_udp:open(0, [binary, {active, false}]),
     {ok, Address} = inet:getaddr(Host, inet),
     State = maps:merge(Config, #{
