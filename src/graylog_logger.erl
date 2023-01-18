@@ -5,22 +5,41 @@
 
 -module(graylog_logger).
 -include_lib("kernel/include/logger.hrl").
+
 -export([
     init/0,
     log/2
 ]).
 
 -export([
-    init/1,
-    handle_event/2,
-    handle_info/2,
-    terminate/2,
-    code_change/3
+    adding_handler/1,
+    removing_handler/1,
+    changing_config/3
 ]).
 
+-export([
+    init/1,
+    handle_event/2
+]).
 
-log(LogEvent, Config) ->
-    gen_event:notify(?MODULE, LogEvent).
+adding_handler(Config) ->
+    application:start(graylog_logger),
+    {ok, Config}.
+
+removing_handler(_Config) ->
+    application:stop(graylog_logger).
+
+changing_config(update, _OldConfig, NewConfig) ->
+    gen_event:notify(?MODULE, {config, NewConfig}),
+    {ok, NewConfig};
+
+changing_config(set, OldConfig, NewConfig) ->
+    NewConfig2 = maps:merge(OldConfig, NewConfig),
+    gen_event:notify(?MODULE, {config, NewConfig2}),
+    {ok, NewConfig2}.
+
+log(LogEvent, _Config) ->
+    gen_event:notify(?MODULE, {log, LogEvent}).
 
 init() ->
     Result = gen_event:start_link({local, ?MODULE}),
@@ -38,16 +57,12 @@ init(_) ->
         local => graylog_logger_utils:hostname()}),
     {ok, State}.
 
-handle_event(Event, #{socket := Socket, address := Address, port := Port} = State) ->
+handle_event({config, Config}, State) ->
+    State2 = maps:merge(State, Config),
+    {ok, State2};
+
+handle_event({log, Event}, #{socket := Socket, address := Address, port := Port} = State) ->
     Message = catch graylog_logger_gelf_formatter:format(Event, State),
     gen_udp:send(Socket, Address, Port, Message),
     {ok, State}.
 
-handle_info(_Info, State) ->
-    {ok, State}.
-
-terminate(_Reason, _State) ->
-    ok.
-
-code_change(_OldVsn, State, _Extra) ->
-    {ok, State}.
