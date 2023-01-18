@@ -16,8 +16,9 @@ safe_encode(Msg) ->
         JsonPayloadList when is_list(JsonPayloadList) ->
             iolist_to_binary(JsonPayloadList);
         {error, _} ->
-            {value, {_, _}, Msg1} = lists:keytake(<<"short_message">>, 1, Msg),
-            safe_encode([{<<"short_message">>, <<"hex message failed to encode">>} | Msg1])
+            {value, {_, InnerMsg}, Msg1} = lists:keytake(<<"short_message">>, 1, Msg),
+            InnerMsg2 = iolist_to_binary(io_lib:format("hex msg. json encode failed: ~p", [graylog_hex:bin2hex(term_to_binary(InnerMsg))])),
+            safe_encode([{<<"short_message">>, InnerMsg2} | Msg1])
     end.
 
 get_raw_data(#{level := Level, meta := #{time := Time} = Meta} = LogEvent, #{local := Host, extra_fields := ExtraFields, formatter := {FModule, FConfig}}) ->
