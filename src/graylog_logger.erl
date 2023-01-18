@@ -4,9 +4,9 @@
 %%%-------------------------------------------------------------------
 
 -module(graylog_logger).
+-include_lib("kernel/include/logger.hrl").
 
 -export([
-    % adding_handler/1,
     init/0,
     log/2
 ]).
@@ -38,9 +38,9 @@ init(_) ->
         local => graylog_logger_utils:hostname()}),
     {ok, State}.
 
-handle_event(Event, #{socket := Socket, host := Host, port := Port} = State) ->
+handle_event(Event, #{socket := Socket, address := Address, port := Port} = State) ->
     Message = catch graylog_logger_gelf_formatter:format(Event, State),
-    gen_udp:send(Socket, Host, Port, Message),
+    gen_udp:send(Socket, Address, Port, Message),
     {ok, State}.
 
 handle_info(_Info, State) ->

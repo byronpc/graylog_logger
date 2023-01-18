@@ -16,18 +16,20 @@ safe_encode(Msg) ->
         JsonPayloadList when is_list(JsonPayloadList) ->
             iolist_to_binary(JsonPayloadList);
         {error, _} ->
-            {value, {_, InnerMsg}, Msg1} = lists:keytake(<<"short_message">>, 1, Msg),
+            {value, {_, _}, Msg1} = lists:keytake(<<"short_message">>, 1, Msg),
             safe_encode([{<<"short_message">>, <<"hex message failed to encode">>} | Msg1])
     end.
 
-get_raw_data(#{level := Level, meta := #{time := Time} = Meta, msg := Msg} = Message, #{local := Host}) ->
+get_raw_data(#{level := Level, meta := #{time := Time} = Meta} = LogEvent, #{local := Host, extra_fields := ExtraFields, formatter := {FModule, FConfig}}) ->
+    Meta2 = maps:merge(Meta, ExtraFields),
+    Message = list_to_binary(FModule:format(LogEvent, FConfig)),
     maps:merge(#{
         version => ?GELF_VERSION,
         host => Host,
         timestamp => Time/1000000,
         level => graylog_logger_utils:severity2int(Level),
-        short_message => graylog_logger_utils:term2bin(Msg)
-    }, get_metadata(Meta)).
+        short_message => Message
+    }, get_metadata(Meta2)).
 
 get_metadata(Meta) ->
     maps:map(fun(_K, V) -> graylog_logger_utils:term2bin(V) end, Meta).
