@@ -5,7 +5,6 @@
 
 -module(graylog_logger).
 -include_lib("kernel/include/logger.hrl").
-
 -export([
     init/0,
     log/2
@@ -19,7 +18,8 @@
     code_change/3
 ]).
 
-log(LogEvent, _Config) ->
+
+log(LogEvent, Config) ->
     gen_event:notify(?MODULE, LogEvent).
 
 init() ->
