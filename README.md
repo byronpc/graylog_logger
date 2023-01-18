@@ -22,7 +22,17 @@ Kernel Configuration
       {handler, graylog, graylog_logger, #{
         host => "localhost",
         port => 12201,
-        compression => disabled | gzip | zlib
+        compression => disabled | gzip | zlib,
+        extra_fields => #{
+          <<"_environment">> => <<"production">>
+        },
+        formatter => {
+          logger_formatter, #{
+              single_line => true,
+              time_offset => "Z",
+              template => [msg]
+          }
+        }
       }}
     ]},
     {logger_level, warning}
