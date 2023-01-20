@@ -1,7 +1,12 @@
-[{kernel,
-  [
+[
+  {kernel, [
     {logger, [
-      {handler, default, undefined},
+      {handler, default, undefined}
+    ]},
+    {logger_level, warning}
+  ]},
+  {graylog_logger, [
+    {logger, [
       {handler, graylog, graylog_logger, #{
         host => "localhost",
         port => 12201,
@@ -11,13 +16,17 @@
         },
         formatter => {
           logger_formatter, #{
-              single_line => true,
-              time_offset => "Z",
-              template => [msg]
+            single_line => true,
+            time_offset => "Z",
+            template => [msg]
           }
-        }
+        },
+        filters => [
+          {remote_group_leader, {fun logger_filters:remote_gl/2, stop}},
+          {progress, {fun logger_filters:progress/2, stop}},
+          {sasl, {fun logger_filters:domain/2, {stop, sub, [otp, sasl]}}}
+        ]
       }}
-    ]},
-    {logger_level, warning}
+    ]}
   ]}
 ].

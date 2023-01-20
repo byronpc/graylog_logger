@@ -7,7 +7,7 @@
    [kernel,
     stdlib
    ]},
-  {env,[]},
+  {env,[{handlers, [{graylog_logger, #{}}]}]},
   {modules, []},
 
   {licenses, ["Apache-2.0"]},

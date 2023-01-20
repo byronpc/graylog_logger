@@ -23,11 +23,12 @@
 ]).
 
 adding_handler(Config) ->
-    application:start(graylog_logger),
+    gen_event:add_handler(?MODULE, ?MODULE, []),
     {ok, Config}.
 
 removing_handler(_Config) ->
-    application:stop(graylog_logger).
+    gen_event:delete_handler(?MODULE, ?MODULE, []),
+    ok.
 
 changing_config(update, _OldConfig, NewConfig) ->
     gen_event:notify(?MODULE, {config, NewConfig}),
@@ -43,11 +44,11 @@ log(LogEvent, _Config) ->
 
 init() ->
     Result = gen_event:start_link({local, ?MODULE}),
-    gen_event:add_handler(?MODULE, ?MODULE, []),
+    logger:add_handlers(?MODULE),
     Result.
 
 init(_) ->
-    Env = application:get_env(kernel, logger, []),
+    Env = application:get_env(graylog_logger, logger, []),
     {handler, _, _, #{host := Host} = Config} = lists:keyfind(graylog_logger, 3, Env),
     {ok, Socket} = gen_udp:open(0, [binary, {active, false}]),
     {ok, Address} = inet:getaddr(Host, inet),
