@@ -5,7 +5,8 @@
   {mod, {graylog_logger_app, []}},
   {applications,
    [kernel,
-    stdlib
+    stdlib,
+    jiffy
    ]},
   {env,[{handlers, [{graylog_logger, #{}}]}]},
   {modules, []},
