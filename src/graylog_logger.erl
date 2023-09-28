@@ -27,7 +27,7 @@ adding_handler(Config) ->
     {ok, Config}.
 
 removing_handler(_Config) ->
-    gen_event:delete_handler(?MODULE, ?MODULE, []),
+    catch gen_event:delete_handler(?MODULE, ?MODULE, []),
     ok.
 
 changing_config(update, _OldConfig, NewConfig) ->
